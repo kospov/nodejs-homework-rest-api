@@ -1,17 +1,20 @@
 const app = require("./app");
 
 const { connect } = require("mongoose");
-const dotenv = require("dotenv");
+require("dotenv").config();
 
-dotenv.config();
-
-const { MONGO_URL } = process.env;
-console.log(MONGO_URL);
+const { MONGO_URL, PORT } = process.env;
+const port = Number(PORT);
 
 connect(MONGO_URL, { dbName: "db-contacts" })
-  .then(() => console.log("Database connection successful"))
-  .catch((error) => console.error(error.message));
+  .then(() => {
+    console.log("Database connection successful");
 
-app.listen(5000, () => {
-  console.log("Server running. Use our API on port: 5000");
-});
+    app.listen(port, () => {
+      console.log(`Server running. Use our API on port: ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error(error.message);
+    process.exit(1);
+  });
