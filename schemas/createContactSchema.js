@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-const schema = Joi.object({
+const createContactSchema = Joi.object({
   name: Joi.string()
     .pattern(/^([a-zA-Z]{2,}\s[a-zA-Z]{1,}'?-?[a-zA-Z]{2,}\s?([a-zA-Z]{1,})?)$/)
     .min(3)
@@ -16,8 +16,8 @@ const schema = Joi.object({
   phone: Joi.string()
     .pattern(/^[+]*[(]{0,1}[0-9]{1,3}[)]{0,1}[-\s/0-9]*$/)
     .required(),
+
+  favorite: Joi.boolean(),
 });
 
-module.exports = {
-  schema,
-};
+module.exports = createContactSchema;

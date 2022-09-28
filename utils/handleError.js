@@ -5,6 +5,4 @@ const handleError = (status, message) => {
   return err;
 };
 
-module.exports = {
-  handleError,
-};
+module.exports = { handleError };
