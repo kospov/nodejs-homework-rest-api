@@ -50,7 +50,7 @@ module.exports = class ContactCtlr {
       const { error } = objectIdSchema.validate(req.params.id);
 
       if (error) {
-        next(error);
+        throw handleError(400, `${req.params.id} is not valid ObjectID`);
       }
 
       const contact = await getContactById(req.params.id);
@@ -69,7 +69,7 @@ module.exports = class ContactCtlr {
       const { error: idErr } = objectIdSchema.validate(req.params.id);
 
       if (idErr) {
-        next(idErr);
+        throw handleError(400, `${req.params.id} is not valid ObjectID`);
       }
 
       const { error: bodyErr } = createContactSchema.validate(req.body);
@@ -94,7 +94,7 @@ module.exports = class ContactCtlr {
       const { error: idErr } = objectIdSchema.validate(req.params.id);
 
       if (idErr) {
-        next(400, idErr);
+        throw handleError(400, `${req.params.id} is not valid ObjectID`);
       }
 
       const { error: bodyErr } = updateStatusContactSchema.validate(req.body);
@@ -119,7 +119,7 @@ module.exports = class ContactCtlr {
       const { error } = objectIdSchema.validate(req.params.id);
 
       if (error) {
-        next(error);
+        throw handleError(400, `${req.params.id} is not valid ObjectID`);
       }
 
       const contact = await removeContact(req.params.id);
