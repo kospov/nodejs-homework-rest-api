@@ -1,5 +1,7 @@
-const contactService = require("./contactService.js");
+const contactService = require("./contactService");
+const userService = require("./userService");
 
 module.exports = {
   ...contactService,
+  ...userService,
 };

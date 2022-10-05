@@ -1,4 +1,4 @@
-const Contact = require("../models/contact");
+const { Contact } = require("../models");
 
 const createContact = (body) => {
   return Contact.create(body);
@@ -8,8 +8,8 @@ const getContactById = (id) => {
   return Contact.findById(id);
 };
 
-const getAllContacts = () => {
-  return Contact.find({});
+const getAllContacts = (owner) => {
+  return Contact.find({ owner }).populate("owner", "-password");
 };
 
 const updateContact = (id, body) => {

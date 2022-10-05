@@ -16,10 +16,15 @@ const constactSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { versionKey: false }
 );
 
-const Contact = model("contact", constactSchema);
+const Contact = model("Contact", constactSchema);
 
 module.exports = Contact;

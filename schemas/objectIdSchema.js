@@ -1,8 +1,6 @@
 const Joi = require("joi");
+Joi.objectId = require("joi-objectid")(Joi);
 
-const objectIdSchema = Joi.string()
-  .regex(/^[0-9a-fA-F]{24}$/)
-  .required()
-  .messages({ "string.pattern.base": "Not valid ObjectID" });
+const objectIdSchema = Joi.objectId();
 
 module.exports = objectIdSchema;

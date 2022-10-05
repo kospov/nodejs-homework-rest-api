@@ -13,18 +13,16 @@ const {
   removeContact,
 } = require("../service");
 
-const { handleError } = require("../utils/handleError");
+const { validateSchema, checkExistDocument } = require("../utils");
 
 module.exports = class ContactCtlr {
   static async apiCreateContact(req, res, next) {
     try {
-      const { error } = createContactSchema.validate(req.body);
+      const { user } = req;
 
-      if (error) {
-        throw handleError(400, "missing required name field");
-      }
+      validateSchema(createContactSchema, req.body);
 
-      const contact = await createContact(req.body);
+      const contact = await createContact({ ...req.body, owner: user.id });
       res.status(201).json(contact);
     } catch (err) {
       next(err);
@@ -33,11 +31,9 @@ module.exports = class ContactCtlr {
 
   static async apiGetAllContacts(req, res, next) {
     try {
-      const contacts = await getAllContacts();
+      const contacts = await getAllContacts(req.user.id);
 
-      if (!contacts) {
-        res.status(404).json({ message: "There are no contacts saved yet!" });
-      }
+      checkExistDocument(contacts);
 
       res.status(200).json(contacts);
     } catch (err) {
@@ -47,17 +43,12 @@ module.exports = class ContactCtlr {
 
   static async apiGetContactById(req, res, next) {
     try {
-      const { error } = objectIdSchema.validate(req.params.id);
-
-      if (error) {
-        next(error);
-      }
+      validateSchema(objectIdSchema, req.params.id);
 
       const contact = await getContactById(req.params.id);
 
-      if (!contact) {
-        throw handleError(404, "Not found");
-      }
+      checkExistDocument(contact);
+
       res.status(200).json(contact);
     } catch (err) {
       next(err);
@@ -66,23 +57,14 @@ module.exports = class ContactCtlr {
 
   static async apiUpdateContact(req, res, next) {
     try {
-      const { error: idErr } = objectIdSchema.validate(req.params.id);
+      validateSchema(objectIdSchema, req.params.id);
 
-      if (idErr) {
-        next(idErr);
-      }
-
-      const { error: bodyErr } = createContactSchema.validate(req.body);
-
-      if (bodyErr) {
-        throw handleError(400, "missing required name field");
-      }
+      validateSchema(createContactSchema, req.body);
 
       const contact = await updateContact(req.params.id, req.body);
 
-      if (!contact) {
-        throw handleError(404, "Not found");
-      }
+      checkExistDocument(contact);
+
       res.status(200).json(contact);
     } catch (err) {
       next(err);
@@ -91,23 +73,14 @@ module.exports = class ContactCtlr {
 
   static async apiUpdateStatusContact(req, res, next) {
     try {
-      const { error: idErr } = objectIdSchema.validate(req.params.id);
+      validateSchema(objectIdSchema, req.params.id);
 
-      if (idErr) {
-        next(400, idErr);
-      }
-
-      const { error: bodyErr } = updateStatusContactSchema.validate(req.body);
-
-      if (bodyErr) {
-        throw handleError(400, "missing field favorite");
-      }
+      validateSchema(updateStatusContactSchema, req.body);
 
       const contact = await updateStatusContact(req.params.id, req.body);
 
-      if (!contact) {
-        throw handleError(404, "Not found");
-      }
+      checkExistDocument(contact);
+
       res.status(200).json(contact);
     } catch (err) {
       next(err);
@@ -116,17 +89,11 @@ module.exports = class ContactCtlr {
 
   static async apiRemoveContact(req, res, next) {
     try {
-      const { error } = objectIdSchema.validate(req.params.id);
-
-      if (error) {
-        next(error);
-      }
+      validateSchema(objectIdSchema, req.params.id);
 
       const contact = await removeContact(req.params.id);
 
-      if (!contact) {
-        throw handleError(404, "Not found");
-      }
+      checkExistDocument(contact);
 
       res.status(200).json({ message: "contact deleted" });
     } catch (err) {
