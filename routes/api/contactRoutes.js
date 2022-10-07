@@ -3,16 +3,13 @@ const router = express.Router();
 const { ContactCtlr } = require("../../controller");
 const { checkAuth } = require("../../middlewares");
 
-router.post("/", checkAuth, ContactCtlr.apiCreateContact);
+router.use(checkAuth);
 
-router.get("/", checkAuth, ContactCtlr.apiGetAllContacts);
-
-router.get("/:id", checkAuth, ContactCtlr.apiGetContactById);
-
-router.put("/:id", checkAuth, ContactCtlr.apiUpdateContact);
-
-router.patch("/:id/favorite", checkAuth, ContactCtlr.apiUpdateStatusContact);
-
-router.delete("/:id", checkAuth, ContactCtlr.apiRemoveContact);
+router.post("/", ContactCtlr.apiCreateContact);
+router.get("/", ContactCtlr.apiGetAllContacts);
+router.get("/:id", ContactCtlr.apiGetContactById);
+router.put("/:id", ContactCtlr.apiUpdateContact);
+router.patch("/:id/favorite", ContactCtlr.apiUpdateStatusContact);
+router.delete("/:id", ContactCtlr.apiRemoveContact);
 
 module.exports = router;

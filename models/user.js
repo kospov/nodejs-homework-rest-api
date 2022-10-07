@@ -16,7 +16,10 @@ const userSchema = new Schema(
     },
     subscription: {
       type: String,
-      enum: ["starter", "pro", "business"],
+      enum: {
+        values: ["starter", "pro", "business"],
+        message: "Subscription must be one of next: starter, pro or business",
+      },
       default: "starter",
     },
     token: String,

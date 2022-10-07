@@ -9,7 +9,6 @@ const {
   getAllContacts,
   getContactById,
   updateContact,
-  updateStatusContact,
   removeContact,
 } = require("../service");
 
@@ -18,11 +17,11 @@ const { validateSchema, checkExistDocument } = require("../utils");
 module.exports = class ContactCtlr {
   static async apiCreateContact(req, res, next) {
     try {
-      const { user } = req;
+      const { user, body } = req;
 
-      validateSchema(createContactSchema, req.body);
+      validateSchema(createContactSchema, body);
 
-      const contact = await createContact({ ...req.body, owner: user.id });
+      const contact = await createContact({ ...body, owner: user.id });
       res.status(201).json(contact);
     } catch (err) {
       next(err);
@@ -31,7 +30,15 @@ module.exports = class ContactCtlr {
 
   static async apiGetAllContacts(req, res, next) {
     try {
-      const contacts = await getAllContacts(req.user.id);
+      const { user } = req;
+      const { favorite, limit, page } = req.query;
+
+      const contacts = await getAllContacts({
+        owner: user.id,
+        favorite,
+        limit,
+        page,
+      });
 
       checkExistDocument(contacts);
 
@@ -43,13 +50,27 @@ module.exports = class ContactCtlr {
 
   static async apiGetContactById(req, res, next) {
     try {
-      validateSchema(objectIdSchema, req.params.id);
+      const { user, params } = req;
 
-      const contact = await getContactById(req.params.id);
+      validateSchema(objectIdSchema, params.id);
 
-      checkExistDocument(contact);
+      const contactIdAndUserId = { _id: params.id, owner: user.id };
 
-      res.status(200).json(contact);
+      const result = await getContactById(contactIdAndUserId);
+
+      checkExistDocument(result);
+
+      const {
+        owner: { token, ...currentOwner },
+        ...currentContact
+      } = result.toObject();
+
+      const contactById = {
+        ...currentContact,
+        owner: currentOwner,
+      };
+
+      res.status(200).json(contactById);
     } catch (err) {
       next(err);
     }
@@ -57,15 +78,28 @@ module.exports = class ContactCtlr {
 
   static async apiUpdateContact(req, res, next) {
     try {
-      validateSchema(objectIdSchema, req.params.id);
+      const { user, params, body } = req;
 
-      validateSchema(createContactSchema, req.body);
+      validateSchema(objectIdSchema, params.id);
+      validateSchema(createContactSchema, body);
 
-      const contact = await updateContact(req.params.id, req.body);
+      const contactIdAndUserId = { _id: params.id, owner: user.id };
 
-      checkExistDocument(contact);
+      const result = await updateContact(contactIdAndUserId, body);
 
-      res.status(200).json(contact);
+      checkExistDocument(result);
+
+      const {
+        owner: { token, ...currentOwner },
+        ...currentContact
+      } = result.toObject();
+
+      const contactById = {
+        ...currentContact,
+        owner: currentOwner,
+      };
+
+      res.status(200).json(contactById);
     } catch (err) {
       next(err);
     }
@@ -73,15 +107,28 @@ module.exports = class ContactCtlr {
 
   static async apiUpdateStatusContact(req, res, next) {
     try {
-      validateSchema(objectIdSchema, req.params.id);
+      const { user, params, body } = req;
 
-      validateSchema(updateStatusContactSchema, req.body);
+      validateSchema(objectIdSchema, params.id);
+      validateSchema(updateStatusContactSchema, body);
 
-      const contact = await updateStatusContact(req.params.id, req.body);
+      const contactIdAndUserId = { _id: params.id, owner: user.id };
 
-      checkExistDocument(contact);
+      const result = await updateContact(contactIdAndUserId, body);
 
-      res.status(200).json(contact);
+      checkExistDocument(result);
+
+      const {
+        owner: { token, ...currentOwner },
+        ...currentContact
+      } = result.toObject();
+
+      const contactById = {
+        ...currentContact,
+        owner: currentOwner,
+      };
+
+      res.status(200).json(contactById);
     } catch (err) {
       next(err);
     }
@@ -89,11 +136,15 @@ module.exports = class ContactCtlr {
 
   static async apiRemoveContact(req, res, next) {
     try {
-      validateSchema(objectIdSchema, req.params.id);
+      const { user, params } = req;
 
-      const contact = await removeContact(req.params.id);
+      validateSchema(objectIdSchema, params.id);
 
-      checkExistDocument(contact);
+      const contactIdAndUserId = { _id: params.id, owner: user.id };
+
+      const result = await removeContact(contactIdAndUserId);
+
+      checkExistDocument(result);
 
       res.status(200).json({ message: "contact deleted" });
     } catch (err) {

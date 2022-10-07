@@ -11,4 +11,6 @@ router.patch("/logout", checkAuth, UserCtrl.apiLogoutUser);
 
 router.get("/current", checkAuth, UserCtrl.apiGetCurrentUser);
 
+router.patch("/", checkAuth, UserCtrl.apiUpdateSubscriptionUser);
+
 module.exports = router;

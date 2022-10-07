@@ -4,24 +4,25 @@ const createContact = (body) => {
   return Contact.create(body);
 };
 
-const getContactById = (id) => {
-  return Contact.findById(id);
+const getContactById = (contactIdAndUserId) => {
+  return Contact.findOne(contactIdAndUserId).populate("owner", "-password");
 };
 
-const getAllContacts = (owner) => {
-  return Contact.find({ owner }).populate("owner", "-password");
+const getAllContacts = ({ owner, favorite = false, limit = 100, page = 1 }) => {
+  return Contact.find({ owner, favorite })
+    .limit(limit)
+    .skip((page - 1) * limit)
+    .populate("owner", "-password");
 };
 
-const updateContact = (id, body) => {
-  return Contact.findByIdAndUpdate(id, body, { new: true });
+const updateContact = (contactIdAndUserId, body) => {
+  return Contact.findOneAndUpdate(contactIdAndUserId, body, {
+    new: true,
+  }).populate("owner", "-password");
 };
 
-const updateStatusContact = (id, body) => {
-  return Contact.findByIdAndUpdate(id, body, { new: true });
-};
-
-const removeContact = (id) => {
-  return Contact.findByIdAndRemove(id);
+const removeContact = (contactIdAndUserId) => {
+  return Contact.findOneAndRemove(contactIdAndUserId);
 };
 
 module.exports = {
@@ -29,6 +30,5 @@ module.exports = {
   getContactById,
   getAllContacts,
   updateContact,
-  updateStatusContact,
   removeContact,
 };

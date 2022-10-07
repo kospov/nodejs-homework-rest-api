@@ -1,12 +1,16 @@
 const { User } = require("../models");
-const { registerSchema, loginSchema } = require("../schemas");
+const {
+  registerSchema,
+  loginSchema,
+  subscriptionSchema,
+} = require("../schemas");
 const { notValidCredantials } = require("../constants");
 const { validateSchema } = require("../utils");
 const {
   registrateUser,
   authenticateUser,
-  getUserByToken,
-} = require("../service/userService");
+  updateSubscriptionUser,
+} = require("../service");
 const { handleError } = require("../utils");
 
 const bcrypt = require("bcryptjs");
@@ -99,7 +103,23 @@ module.exports = class UserCtrl {
 
   static async apiGetCurrentUser(req, res, next) {
     try {
-      const { user } = req;
+      const { password, token, ...rest } = req.user.toObject();
+
+      const currentUser = {
+        user: rest,
+      };
+
+      res.status(200).json(currentUser);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async apiUpdateSubscriptionUser(req, res, next) {
+    try {
+      validateSchema(subscriptionSchema, req.body);
+
+      const { user, body } = req;
 
       const { authorization = "" } = req.headers;
 
@@ -109,15 +129,15 @@ module.exports = class UserCtrl {
         throw handleError(401, "Not authorized");
       }
 
-      const result = await getUserByToken({ token });
+      const result = await updateSubscriptionUser(user.id, body);
 
       const { password, token: currentToken, ...existUser } = result.toObject();
 
-      const currentUser = {
+      const updatedUser = {
         user: existUser,
       };
 
-      res.status(200).json(currentUser);
+      res.status(200).json(updatedUser);
     } catch (err) {
       next(err);
     }
