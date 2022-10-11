@@ -8,12 +8,12 @@ const authenticateUser = (id, token) => {
   return User.findByIdAndUpdate(id, token, { new: true });
 };
 
-const updateSubscriptionUser = (id, body) => {
+const updateUser = (id, body) => {
   return User.findByIdAndUpdate(id, body, { new: true });
 };
 
 module.exports = {
   registrateUser,
   authenticateUser,
-  updateSubscriptionUser,
+  updateUser,
 };
