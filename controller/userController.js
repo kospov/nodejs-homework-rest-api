@@ -1,19 +1,22 @@
 const { User } = require("../models");
-const { registerSchema, loginSchema } = require("../schemas");
+const {
+  registerSchema,
+  loginSchema,
+  subscriptionSchema,
+} = require("../schemas");
 const { notValidCredantials } = require("../constants");
 const { validateSchema } = require("../utils");
-const {
-  registrateUser,
-  authenticateUser,
-  getUserByToken,
-} = require("../service/userService");
-const { handleError } = require("../utils");
+const { registrateUser, authenticateUser, updateUser } = require("../service");
+const { handleError, handleAvatar } = require("../utils");
 
+const gravatar = require("gravatar");
 const bcrypt = require("bcryptjs");
-
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { JWT_SECRET } = process.env;
+
+const path = require("path");
+const fs = require("fs/promises");
 
 module.exports = class UserCtrl {
   static async apiRegistrateUser(req, res, next) {
@@ -35,6 +38,7 @@ module.exports = class UserCtrl {
         password: hash,
         email,
         subscription,
+        avatarURL: gravatar.url(email),
       });
 
       const { password: newPassword, ...newUser } = result.toObject();
@@ -99,25 +103,65 @@ module.exports = class UserCtrl {
 
   static async apiGetCurrentUser(req, res, next) {
     try {
-      const { user } = req;
-
-      const { authorization = "" } = req.headers;
-
-      const token = authorization.split(" ")[1];
-
-      if (token !== user.token) {
-        throw handleError(401, "Not authorized");
-      }
-
-      const result = await getUserByToken({ token });
-
-      const { password, token: currentToken, ...existUser } = result.toObject();
+      const { password, token, ...rest } = req.user.toObject();
 
       const currentUser = {
-        user: existUser,
+        user: rest,
       };
 
       res.status(200).json(currentUser);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async apiUpdateSubscriptionUser(req, res, next) {
+    try {
+      validateSchema(subscriptionSchema, req.body);
+
+      const { user, body } = req;
+
+      const result = await updateUser(user.id, body);
+
+      const { password, token: currentToken, ...existUser } = result.toObject();
+
+      const updatedUser = {
+        user: existUser,
+      };
+
+      res.status(200).json(updatedUser);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  static async apiUploadUserAvatar(req, res, next) {
+    try {
+      const { user, file } = req;
+
+      const { path: tempDir, originalname = "" } = file;
+
+      const [extension] = originalname.split(".").reverse();
+      const newFileName = `${user.id}.${extension}`;
+      const uploadDir = path.join(
+        __dirname,
+        "../",
+        "public",
+        "avatars",
+        newFileName
+      );
+
+      await handleAvatar(`tmp/${originalname}`);
+
+      await fs.rename(tempDir, uploadDir);
+
+      const updatedUser = await updateUser(user.id, {
+        avatarURL: path.join("avatars", newFileName),
+      });
+
+      const { avatarURL } = updatedUser.toObject();
+
+      res.status(200).json({ avatarURL });
     } catch (err) {
       next(err);
     }

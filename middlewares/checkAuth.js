@@ -8,9 +8,9 @@ const { JWT_SECRET } = process.env;
 const checkAuth = async (req, res, next) => {
   try {
     const { authorization = "" } = req.headers;
-    const [bearer, token] = authorization.split(" ");
+    const [tokenType, token] = authorization.split(" ");
 
-    if (bearer !== "Bearer") {
+    if (tokenType !== "Bearer") {
       throw handleError(401, "Not authorized");
     }
 

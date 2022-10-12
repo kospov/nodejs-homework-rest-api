@@ -1,10 +1,10 @@
 const handleError = require("./handleError");
 
 const validateSchema = (schema, target) => {
-  const { err } = schema.validate(target);
+  const { error } = schema.validate(target);
 
-  if (err) {
-    throw handleError(400, err.message);
+  if (error) {
+    throw handleError(400, error.message);
   }
 };
 
