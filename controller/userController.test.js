@@ -9,6 +9,7 @@ const app = require("../app");
 const { User } = require("../models");
 
 const request = require("supertest");
+const { v4: uuid } = require("uuid");
 
 describe("test auth routes", () => {
   let server;
@@ -26,16 +27,25 @@ describe("test auth routes", () => {
 
   test("test login route", async () => {
     const password = "Qwerty1234.";
-    const email = "q1234@gmail.com";
+    const email = "q12345@gmail.com";
+    const verificationToken = uuid();
+    const verify = false;
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
     const newUser = {
       email,
       password: hash,
+      verificationToken,
+      verify,
     };
 
     const user = await User.create(newUser);
+
+    await User.findByIdAndUpdate(user.id, {
+      verificationToken: null,
+      verify: true,
+    });
 
     const loginUser = {
       email,
