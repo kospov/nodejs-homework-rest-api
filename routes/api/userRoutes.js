@@ -14,5 +14,10 @@ router.patch(
   upload.single("avatar"),
   UserCtrl.apiUploadUserAvatar
 );
+router.get(
+  "/verify/:verificationToken",
+  UserCtrl.apiGetUserByVerificationToken
+);
+router.post("/verify", UserCtrl.apiResendVerificationTokenToUser);
 
 module.exports = router;
